@@ -32,9 +32,15 @@ else:
 if args.reduced_size:
     #take a constant seed
     random.seed(7)
+    #change the args to match the reduced size
     args.dstore_size = int(args.dstore_size * args.reduced_size)
+    args.faiss_index = f'{args.faiss_index}.{args.reduced_size}'
+
     print(f'New dataset size is {args.dstore_size}')
+    print(f'New index name is {args.faiss_index}')
     print('Choosing a random subset')
+
+    #sample the subset
     sampled_indices = np.random.choice(np.arange(vals.shape[0]), size=[min(args.dstore_size, vals.shape[0])], replace=False)
     keys = keys[sampled_indices]
     vals = vals[sampled_indices]
