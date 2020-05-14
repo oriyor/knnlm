@@ -3,7 +3,7 @@ import os
 import numpy as np
 import faiss
 import time
-
+import random
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--dstore_mmap', type=str, help='memmap where keys and vals are stored')
@@ -28,6 +28,18 @@ if args.dstore_fp16:
 else:
     keys = np.memmap(args.dstore_mmap+'_keys.npy', dtype=np.float32, mode='r', shape=(args.dstore_size, args.dimension))
     vals = np.memmap(args.dstore_mmap+'_vals.npy', dtype=np.int32, mode='r', shape=(args.dstore_size, 1))
+
+if args.reduced_size:
+    #take a constant seed
+    random.seed(7)
+    args.dstore_size = int(args.dstore_size * args.reduced_size)
+    print(f'New dataset size is {args.dstore_size}')
+    print('Choosing a random subset')
+    sampled_indices = np.random.choice(np.arange(vals.shape[0]), size=[min(args.dstore_size, vals.shape[0])], replace=False)
+    keys = keys[sampled_indices]
+    vals = vals[sampled_indices]
+    print('Done choosing a random subset')
+
 
 if not os.path.exists(args.faiss_index+".trained"):
     # Initialize faiss index
